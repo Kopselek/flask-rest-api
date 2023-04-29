@@ -2,3 +2,4 @@
 # Usage: pip install -r requirements.txt
 
 Flask==2.2.3
+pytest==7.3.1
