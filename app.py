@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, request, redirect, url_for
 
+sensors_cache = {}
+
 
 def create_app():
     app = Flask(__name__)
@@ -20,6 +22,5 @@ def create_app():
     return app
 
 
-create_app()
-
-sensors_cache = {}
+if __name__ == '__main__':
+    create_app().run(debug=True, host='0.0.0.0')
