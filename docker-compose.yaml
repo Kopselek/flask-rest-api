@@ -2,6 +2,8 @@ version: '3'
 
 services:
   web:
-    build: '.'
+    build: .
+    volumes:
+      - ./:/srv
     ports:
       - '5000:5000'
