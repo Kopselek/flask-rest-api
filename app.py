@@ -1,41 +1,51 @@
 from flask import Flask, jsonify, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_restful import Resource, Api, abort, reqparse
 
 sensors_cache = {}
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sensor.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy()
 db.init_app(app)
+api = Api(app)
 
 
 class Sensor(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    temperature = db.Column(db.Integer, nullable=False)
+    __tablename__ = 'sensors'
 
+    id = db.Column(db.Integer, primary_key=True)
+    temperature = db.Column(db.Float, nullable=False)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'temperature': self.temperature
+        }
+
+
+parser = reqparse.RequestParser(bundle_errors=True)
+parser.add_argument('temperature', type=float, required=True)
 
 with app.app_context():
     db.create_all()
 
 
-@app.route('/')
-def index():
-    return redirect(url_for('sensor_list'))
+class Sensors(Resource):
+    def get(self):
+        sensors = db.session.execute(db.select(Sensor).order_by(Sensor.id)).scalars()
+        return [Sensor.serialize(sensor) for sensor in sensors]
 
 
-@app.route('/sensors')
-def sensor_list():
-    sensors = db.session.execute(db.select(Sensor).order_by(Sensor.id)).scalars()
-    return sensors, 200
+class SingleSensor(Resource):
+    def get(self, sensor_id):
+        sensor = db.session.execute(db.select(Sensor).filter_by(id=sensor_id)).scalar_one()
+        return Sensor.serialize(sensor)
 
 
-@app.post('/sensor')
-def sensor_post():
-    sensors_cache.update(request.json)
-    return '', 200
-
+api.add_resource(Sensors, '/sensors')
+api.add_resource(SingleSensor, '/sensor/<sensor_id>')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
