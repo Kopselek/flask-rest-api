@@ -1,7 +1,8 @@
 
 # Flask Learning Project
 
-**flask-rest-minor-learning-project-with-sensors-that-friend-told-me-to-do-and-it-is-rest-api-i-think** is project for learning python, flask, pytest.
+**flask-rest-api** is project for learning python, flask, pytest.
+Im building rest api based on [NBB REST API Design Guide](https://github.com/NationalBankBelgium/REST-API-Design-Guide)
 
 
 
