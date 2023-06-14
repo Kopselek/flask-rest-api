@@ -60,9 +60,21 @@ class SingleSensor(Resource):
         db.session.commit()
         return Sensor.serialize(sensor), 201
 
+class AverageTemperature(Resource):
+    def get(self):
+        sensors = db.session.execute(db.select(Sensor).order_by(Sensor.id)).scalars()
+        sensors_sum = 0
+        sensors_temperature_sum = 0
+        for sensor in sensors:
+            sensors_sum += 1
+            sensors_temperature_sum += sensor.temperature
+        average_temperature = round(sensors_temperature_sum / sensors_sum, 2)
+        return {"averageTemperature": average_temperature}
+
 
 api.add_resource(Sensors, '/sensors')
 api.add_resource(SingleSensor, '/sensor/<sensor_id>')
+api.add_resource(AverageTemperature, '/averageTemperature')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
