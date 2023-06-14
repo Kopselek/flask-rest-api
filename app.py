@@ -1,6 +1,6 @@
-from flask import Flask, jsonify, request, redirect, url_for
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_restful import Resource, Api, abort, reqparse
+from flask_restful import Resource, Api, reqparse
 
 sensors_cache = {}
 
@@ -34,8 +34,9 @@ with app.app_context():
 
 class Sensors(Resource):
     def get(self):
-        sensors = db.session.execute(db.select(Sensor).order_by(Sensor.id)).scalars()
+        sensors = Sensor.query.order_by(Sensor.id).all()
         return jsonify([Sensor.serialize(sensor) for sensor in sensors])
+
     def post(self):
         args = parser.parse_args()
         sensor = Sensor(temperature=args['temperature'])
@@ -46,23 +47,26 @@ class Sensors(Resource):
 
 class SingleSensor(Resource):
     def get(self, sensor_id):
-        sensor = db.session.execute(db.select(Sensor).filter_by(id=sensor_id)).scalar_one()
+        sensor = Sensor.query.filter_by(id=sensor_id).first()
         return Sensor.serialize(sensor)
+
     def delete(self, sensor_id):
-        sensor = db.session.execute(db.select(Sensor).filter_by(id=sensor_id)).scalar_one()
+        sensor = Sensor.query.filter_by(id=sensor_id).first()
         db.session.delete(sensor)
         db.session.commit()
         return '', 204
+
     def put(self, sensor_id):
-        sensor = db.session.execute(db.select(Sensor).filter_by(id=sensor_id)).scalar_one()
+        sensor = Sensor.query.filter_by(id=sensor_id).first()
         args = parser.parse_args()
         sensor.temperature = args['temperature']
         db.session.commit()
         return Sensor.serialize(sensor), 201
 
+
 class AverageTemperature(Resource):
     def get(self):
-        sensors = db.session.execute(db.select(Sensor).order_by(Sensor.id)).scalars()
+        sensors = Sensor.query.order_by(Sensor.id).all()
         sensors_sum = 0
         sensors_temperature_sum = 0
         for sensor in sensors:
