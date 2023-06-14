@@ -4,11 +4,6 @@
 **flask-rest-api** is project for learning python, flask, pytest, postman.
 Im building rest api based on [NBB REST API Design Guide](https://github.com/NationalBankBelgium/REST-API-Design-Guide)
 ## Installation
-
-- clone repository
-```bash
-https://github.com/Kopselek/flask-rest-api
-```
 ### docker
 
 ```bash
