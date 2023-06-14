@@ -35,13 +35,30 @@ with app.app_context():
 class Sensors(Resource):
     def get(self):
         sensors = db.session.execute(db.select(Sensor).order_by(Sensor.id)).scalars()
-        return [Sensor.serialize(sensor) for sensor in sensors]
+        return jsonify([Sensor.serialize(sensor) for sensor in sensors])
+    def post(self):
+        args = parser.parse_args()
+        sensor = Sensor(temperature=args['temperature'])
+        db.session.add(sensor)
+        db.session.commit()
+        return Sensor.serialize(sensor), 201
 
 
 class SingleSensor(Resource):
     def get(self, sensor_id):
         sensor = db.session.execute(db.select(Sensor).filter_by(id=sensor_id)).scalar_one()
         return Sensor.serialize(sensor)
+    def delete(self, sensor_id):
+        sensor = db.session.execute(db.select(Sensor).filter_by(id=sensor_id)).scalar_one()
+        db.session.delete(sensor)
+        db.session.commit()
+        return '', 204
+    def put(self, sensor_id):
+        sensor = db.session.execute(db.select(Sensor).filter_by(id=sensor_id)).scalar_one()
+        args = parser.parse_args()
+        sensor.temperature = args['temperature']
+        db.session.commit()
+        return Sensor.serialize(sensor), 201
 
 
 api.add_resource(Sensors, '/sensors')
